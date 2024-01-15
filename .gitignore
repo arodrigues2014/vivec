@@ -48,3 +48,7 @@ Thumbs.db
 *.mov
 *.wmv
 
+.vs/
+Vrt.Vivec.Svc/bin/
+Vrt.Vivec.Svc/obj/
+Vrt.Vivec.Svc/Vrt.Vivec.Svc.csproj.user
