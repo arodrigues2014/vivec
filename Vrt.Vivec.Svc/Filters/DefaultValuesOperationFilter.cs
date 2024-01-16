@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-
+﻿
 namespace Vrt.Vivec.Svc.Filters;
 
 public class DefaultValuesOperationFilter : IOperationFilter
@@ -16,7 +12,9 @@ public class DefaultValuesOperationFilter : IOperationFilter
     {
         if (operation.Parameters is null) return;
 
-        operation.Parameters.ToList().RemoveAll(parameter => parameter.Name == "api-version");
+        var parametersToRemove = operation.Parameters.Where(x => x.Name == "api-version").ToList();
+        foreach (var parameter in parametersToRemove)
+            operation.Parameters.Remove(parameter);
 
         foreach (OpenApiParameter parameter in operation.Parameters)
         {
@@ -38,3 +36,4 @@ public class DefaultValuesOperationFilter : IOperationFilter
         }
     }
 }
+
