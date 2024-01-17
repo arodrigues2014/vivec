@@ -17,6 +17,8 @@ startUp.AddApiExplorer(builder.Services);
 
 startUp.AddSwaggerGen(builder.Services);
 
+builder.Services.AddTransient<IUsuarioValidator, UsuarioValidator>();
+
 WebApplication app = builder.Build();
 
 SettingsHelper.Initialize(app.Configuration);

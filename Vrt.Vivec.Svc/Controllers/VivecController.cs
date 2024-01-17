@@ -1,5 +1,4 @@
-﻿using Vrt.Vivec.Svc.Data;
-
+﻿
 namespace Vrt.Vivec.Svc.Controllers
 {
 
@@ -7,32 +6,38 @@ namespace Vrt.Vivec.Svc.Controllers
     [ApiController]
     public class VivecController : ControllerBase
     {
-        [HttpGet("GetPin/{id}")]
-        public async Task<IActionResult> Get(int id)
-        {
-            try
-            {
+        private readonly IUsuarioValidator _usuarioValidator;
 
-                return Ok(true);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(false);
-            }
+        public VivecController(IUsuarioValidator usuarioValidator)
+        {
+            _usuarioValidator = usuarioValidator ?? throw new ArgumentNullException(nameof(usuarioValidator));
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromQuery] UsuarioDTO usuarioDTO)
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Login([FromQuery] Usuario usuario)
         {
+
             try
             {
+                var validationResult = _usuarioValidator.Validate(usuario);
 
-                return Ok(true);
+                if (validationResult.IsValid)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new ErrorResultHelper(usuario, validationResult.Errors));
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(false);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
     }
 }
