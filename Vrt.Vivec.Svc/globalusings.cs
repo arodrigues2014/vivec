@@ -15,3 +15,8 @@ global using Vrt.Vivec.Svc.Helpers;
 global using AutoMapper;
 global using Newtonsoft.Json;
 global using Vrt.Vivec.Svc.Data.DTOs;
+global using Microsoft.AspNetCore.Authorization;
+global using Vrt.Vivec.Svc.Data.Mapper;
+global using Vrt.Vivec.Svc.Data.Response;
+global using Vrt.Vivec.Svc;
+global using Vrt.Vivec.Svc.Data.Mapper;

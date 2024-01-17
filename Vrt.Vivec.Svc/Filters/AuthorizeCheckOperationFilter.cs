@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-
-namespace Vrt.Vivec.Svc.Filters;
+﻿namespace Vrt.Vivec.Svc.Filters;
 
 public class AuthorizeCheckOperationFilter : IOperationFilter
 {

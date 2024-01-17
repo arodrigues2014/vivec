@@ -1,7 +1,4 @@
 
-using Vrt.Vivec.Svc;
-using Vrt.Vivec.Svc.Data.Mapper;
-
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);

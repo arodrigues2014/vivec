@@ -1,28 +1,27 @@
-﻿namespace Vrt.Vivec.Svc.Helpers
+﻿namespace Vrt.Vivec.Svc.Helpers;
+
+public class ErrorResultHelper
 {
-    public class ErrorResultHelper
+    public object? Input { get; set; }
+    public IList<ValidationError>? ValidationErrors { get; set; }
+
+    public ErrorResultHelper(object? input, IList<ValidationFailure>? validationErrors)
     {
-        public object? Input { get; set; }
-        public IList<ValidationError>? ValidationErrors { get; set; }
+        Input = input;
 
-        public ErrorResultHelper(object? input, IList<ValidationFailure>? validationErrors)
+        ValidationErrors = validationErrors?.Select(error =>
+            new ValidationError(error.PropertyName, error.ErrorMessage)).ToList();
+    }
+
+    public class ValidationError
+    {
+        public string PropertyName { get; set; }
+        public string ErrorMessage { get; set; }
+
+        public ValidationError(string propertyName, string errorMessage)
         {
-            Input = input;
-
-            ValidationErrors = validationErrors?.Select(error =>
-                new ValidationError(error.PropertyName, error.ErrorMessage)).ToList();
-        }
-
-        public class ValidationError
-        {
-            public string PropertyName { get; set; }
-            public string ErrorMessage { get; set; }
-
-            public ValidationError(string propertyName, string errorMessage)
-            {
-                PropertyName = propertyName;
-                ErrorMessage = errorMessage;
-            }
+            PropertyName = propertyName;
+            ErrorMessage = errorMessage;
         }
     }
 }
