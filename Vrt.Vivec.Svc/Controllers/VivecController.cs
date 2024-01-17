@@ -14,6 +14,7 @@ public class VivecController : ControllerBase
     }
 
     [HttpPost("Login")]
+    //[Authorize]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
@@ -40,6 +41,7 @@ public class VivecController : ControllerBase
     }
 
     [HttpGet]
+    //[Authorize]
     [ProducesResponseType(typeof(News), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
