@@ -1,5 +1,6 @@
-using Vrt.Vivec.Svc.Helpers;
+
 using Vrt.Vivec.Svc;
+using Vrt.Vivec.Svc.Data.Mapper;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ startUp.AddApiExplorer(builder.Services);
 startUp.AddSwaggerGen(builder.Services);
 
 builder.Services.AddTransient<IUsuarioValidator, UsuarioValidator>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 WebApplication app = builder.Build();
 
@@ -42,5 +45,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseSwagger();
 
 app.Run();

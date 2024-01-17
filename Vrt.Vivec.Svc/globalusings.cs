@@ -12,3 +12,6 @@ global using Vrt.Vivec.Svc.Services.Validator;
 global using FluentValidation.Results;
 global using Vrt.Vivec.Svc.Data.Request;
 global using Vrt.Vivec.Svc.Helpers;
+global using AutoMapper;
+global using Newtonsoft.Json;
+global using Vrt.Vivec.Svc.Data.DTOs;
