@@ -1,4 +1,6 @@
-﻿namespace Vrt.Vivec.Svc.Controllers
+﻿using Vrt.Vivec.Svc.Data;
+
+namespace Vrt.Vivec.Svc.Controllers
 {
 
     [Route("api/v1/[controller]")]
@@ -15,10 +17,22 @@
             }
             catch (Exception ex)
             {
-                // Manejar cualquier excepción y devolver false o algún indicador de error
                 return BadRequest(false);
             }
         }
 
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromQuery] UsuarioDTO usuarioDTO)
+        {
+            try
+            {
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(false);
+            }
+        }
     }
 }
