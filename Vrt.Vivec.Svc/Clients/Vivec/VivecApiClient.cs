@@ -1,4 +1,7 @@
-﻿namespace Vrt.Vivec.Svc.Clients.Vivec
+﻿using Azure;
+using System.Net;
+
+namespace Vrt.Vivec.Svc.Clients.Vivec
 {
     public class VivecApiClient : HttpClient
     {
@@ -11,22 +14,46 @@
             BaseAddress = new Uri(_configuration.GetValue<string>("Vivec:BaseUrl"));
 
             Timeout = new TimeSpan(0, 10, 0);
-
-            DefaultRequestHeaders.TryAddWithoutValidation("Authorization", _configuration.GetValue<string>("Payflow:Key"));
         }
 
         public async Task<string> SendRequest(HttpRequestMessage request)
         {
-            var response = await SendAsync(request);
-            int tries = 0;
-
-            while (!response.EnsureSuccessStatusCode().IsSuccessStatusCode && tries < 3)
+            try
             {
-                tries++;
-                response = await SendAsync(request);
+                var response = await SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+                    LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: errorResponse, ex: null);
+                    return errorResponse;
+
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                LogErrorAndThrow(ex: ex);
+            }
+            catch (Exception ex)
+            {
+                LogErrorAndThrow(ex: ex);
             }
 
-            return await response.Content.ReadAsStringAsync();
+            return null; 
+        }
+
+        private void LogErrorAndThrow(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null )
+        {
+            string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
+
+            if (statusCode != HttpStatusCode.InternalServerError || !string.IsNullOrEmpty(errorResponse))
+            {
+                Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: {statusCode}, Response: {errorResponse}");
+            }
         }
     }
 }

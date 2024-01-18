@@ -10,5 +10,7 @@ public partial class Startup
     private void AddServices(IServiceCollection services)
     {
 
+        services.AddTransient<IUsuarioValidator, UsuarioValidator>();
+        services.AddAutoMapper(typeof(MappingProfile));
     }
 }

@@ -1,4 +1,8 @@
 ﻿
+using System.Configuration;
+using Vrt.Vivec.Svc.Clients.Vivec;
+using Vrt.Vivec.Svc.Helpers.Configuration;
+
 namespace Vrt.Vivec.Svc.Controllers;
 
 
@@ -7,10 +11,18 @@ namespace Vrt.Vivec.Svc.Controllers;
 public class VivecController : ControllerBase
 {
     private readonly IUsuarioValidator _usuarioValidator;
+    private readonly IConfiguration _configuration;
+    private VivecApiClient? _client;
 
-    public VivecController(IUsuarioValidator usuarioValidator)
+    public VivecController(IUsuarioValidator usuarioValidator, IConfiguration configuration)
     {
         _usuarioValidator = usuarioValidator ?? throw new ArgumentNullException(nameof(usuarioValidator));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    }
+
+    private VivecApiClient GetClient()
+    {
+        return new VivecApiClient(_configuration);
     }
 
     [HttpPost("Login")]
@@ -20,22 +32,27 @@ public class VivecController : ControllerBase
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Login([FromQuery] Usuario usuario)
     {
-
         try
         {
             var validationResult = _usuarioValidator.Validate(usuario);
 
-            if (validationResult.IsValid)
+            if (!validationResult.IsValid)
             {
-                return Ok(true);
+                return BadRequest(new ErrorResultHelper(usuario, validationResult.Errors));
             }
-            else
+
+            using (_client = GetClient())
             {
-                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResultHelper(usuario, validationResult.Errors));
+                ConfigurationHelper.Initialize(_configuration);
+
+                var result = await _client?.SendRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
+
+                return Ok(result != null ? result : false);
             }
         }
         catch (Exception ex)
         {
+            Log.Logger.ForContext("Process", "Login").Error(ex, "Exception thrown getting data from Vivec");
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
