@@ -19,6 +19,12 @@ builder.Services.AddTransient<IUsuarioValidator, UsuarioValidator>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+builder.Logging.AddSerilog(Log.Logger);
+
 WebApplication app = builder.Build();
 
 SettingsHelper.Initialize(app.Configuration);

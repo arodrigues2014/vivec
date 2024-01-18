@@ -19,4 +19,4 @@ global using Microsoft.AspNetCore.Authorization;
 global using Vrt.Vivec.Svc.Data.Mapper;
 global using Vrt.Vivec.Svc.Data.Response;
 global using Vrt.Vivec.Svc;
-global using Vrt.Vivec.Svc.Data.Mapper;
+global using Serilog;
