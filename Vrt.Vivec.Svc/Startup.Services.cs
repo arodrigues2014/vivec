@@ -1,4 +1,6 @@
-﻿namespace Vrt.Vivec.Svc;
+﻿using Vrt.Vivec.Svc.Application;
+
+namespace Vrt.Vivec.Svc;
 
 public partial class Startup
 {
@@ -11,6 +13,7 @@ public partial class Startup
     {
 
         services.AddTransient<IUsuarioValidator, UsuarioValidator>();
+        services.AddTransient<ILoginAppService, LoginAppService>();
         services.AddAutoMapper(typeof(MappingProfile));
     }
 }

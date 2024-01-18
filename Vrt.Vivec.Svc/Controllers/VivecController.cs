@@ -1,5 +1,7 @@
 ﻿
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using System.Configuration;
+using Vrt.Vivec.Svc.Application;
 using Vrt.Vivec.Svc.Clients.Vivec;
 using Vrt.Vivec.Svc.Helpers.Configuration;
 
@@ -10,20 +12,13 @@ namespace Vrt.Vivec.Svc.Controllers;
 [ApiController]
 public class VivecController : ControllerBase
 {
-    private readonly IUsuarioValidator _usuarioValidator;
-    private readonly IConfiguration _configuration;
-    private VivecApiClient? _client;
+    private readonly ILoginAppService _loginAppService;
 
-    public VivecController(IUsuarioValidator usuarioValidator, IConfiguration configuration)
+    public VivecController(IUsuarioValidator usuarioValidator, IConfiguration configuration, ILoginAppService loginAppService)
     {
-        _usuarioValidator = usuarioValidator ?? throw new ArgumentNullException(nameof(usuarioValidator));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _loginAppService = loginAppService ?? throw new ArgumentNullException(nameof(loginAppService));
     }
 
-    private VivecApiClient GetClient()
-    {
-        return new VivecApiClient(_configuration);
-    }
 
     [HttpPost("Login")]
     //[Authorize]
@@ -32,29 +27,7 @@ public class VivecController : ControllerBase
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Login([FromQuery] Usuario usuario)
     {
-        try
-        {
-            var validationResult = _usuarioValidator.Validate(usuario);
-
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new ErrorResultHelper(usuario, validationResult.Errors));
-            }
-
-            using (_client = GetClient())
-            {
-                ConfigurationHelper.Initialize(_configuration);
-
-                var result = await _client?.SendRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
-
-                return Ok(result != null ? result : false);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Logger.ForContext("Process", "Login").Error(ex, "Exception thrown getting data from Vivec");
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        return await _loginAppService.LoginAsync(usuario);
     }
 
     [HttpGet]

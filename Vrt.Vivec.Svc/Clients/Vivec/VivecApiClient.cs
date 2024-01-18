@@ -1,6 +1,4 @@
-﻿using Azure;
-using System.Net;
-
+﻿
 namespace Vrt.Vivec.Svc.Clients.Vivec
 {
     public class VivecApiClient : HttpClient

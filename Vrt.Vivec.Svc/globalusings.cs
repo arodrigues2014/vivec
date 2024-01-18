@@ -20,4 +20,6 @@ global using Vrt.Vivec.Svc.Data.Mapper;
 global using Vrt.Vivec.Svc.Data.Response;
 global using Vrt.Vivec.Svc;
 global using Serilog;
-global using Vrt.Vivec.Svc.Services;
+global using Vrt.Vivec.Svc.Clients.Vivec;
+global using Vrt.Vivec.Svc.Helpers.Configuration;
+global using System.Net;

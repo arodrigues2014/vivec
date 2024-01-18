@@ -5,27 +5,26 @@ namespace Vrt.Vivec.Svc.Helpers.Configuration;
 public static class ConfigurationHelper
 {
     private static IConfiguration _configuration;
-
+    private static string? BaseUrl => _configuration.GetValue<string>("Vivec:BaseUrl");
+    private static string? endpointUrl;
     public static void Initialize(IConfiguration configuration)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 
+    public static HttpRequestMessage VivecPostNewsRequest(string endpoint)
+    {
+        ValidateConfigurationAndEndpoint(endpoint);
+
+        string fullUrl = $"{BaseUrl}{endpointUrl}";
+
+        HttpRequestMessage hrm = new HttpRequestMessage(HttpMethod.Post, fullUrl);
+
+        return hrm;
+    }
     public static HttpRequestMessage VivecPostLoginRequest(string endpoint)
     {
-        if (_configuration == null)
-        {
-            throw new InvalidOperationException("Configuration not initialized. Call Initialize before using this helper.");
-        }
-
-        string? baseUrl = _configuration.GetValue<string>("Vivec:BaseUrl");
-
-        string? endpointUrl = _configuration.GetValue<string>($"Vivec:Endpoints:{endpoint}");
-
-        if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(endpointUrl))
-        {
-            throw new InvalidOperationException("BaseUrl or Endpoint configuration is missing or invalid.");
-        }
+        ValidateConfigurationAndEndpoint(endpoint);
 
         // Nombre de usuario y contraseña para la autorización 
         var username = _configuration?.GetValue<string>("Vivec:Username");
@@ -46,12 +45,32 @@ public static class ConfigurationHelper
         // Configurar la solicitud POST con x-www-form-urlencoded
         var content = new FormUrlEncodedContent(formData);
 
-        string fullUrl = $"{baseUrl}{endpointUrl}";
+        string fullUrl = $"{BaseUrl}{endpointUrl}";
 
         HttpRequestMessage hrm = new HttpRequestMessage(HttpMethod.Post, fullUrl);
 
         hrm.Content = content;
 
         return hrm;
+    }
+
+    private static void ValidateConfigurationAndEndpoint(string endpoint)
+    {
+        if (_configuration == null)
+        {
+            throw new InvalidOperationException("Configuration not initialized. Call Initialize before using this helper.");
+        }
+
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new InvalidOperationException("Endpoint configuration is missing or invalid.");
+        }
+
+        endpointUrl = _configuration.GetValue<string>($"Vivec:Endpoints:{endpoint}");
+
+        if (string.IsNullOrWhiteSpace(BaseUrl) || string.IsNullOrWhiteSpace(endpointUrl))
+        {
+            throw new InvalidOperationException("BaseUrl or Endpoint configuration is missing or invalid.");
+        }
     }
 }
