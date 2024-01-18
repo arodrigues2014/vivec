@@ -23,3 +23,6 @@ global using Serilog;
 global using Vrt.Vivec.Svc.Clients.Vivec;
 global using Vrt.Vivec.Svc.Helpers.Configuration;
 global using System.Net;
+global using Polly;
+global using System.ComponentModel.DataAnnotations;
+global using Vrt.Vivec.Svc.Application;

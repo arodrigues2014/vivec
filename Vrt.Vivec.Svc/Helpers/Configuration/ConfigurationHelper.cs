@@ -31,9 +31,7 @@ public static class ConfigurationHelper
         var password = _configuration?.GetValue<string>("Vivec:Password");
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-        {
             throw new InvalidOperationException("Username or Password configuration is empty.");
-        }
 
         // Crear datos del formulario
         var formData = new List<KeyValuePair<string, string>>
@@ -42,14 +40,12 @@ public static class ConfigurationHelper
             new KeyValuePair<string, string>("password", password)
         };
 
-        // Configurar la solicitud POST con x-www-form-urlencoded
-        var content = new FormUrlEncodedContent(formData);
-
         string fullUrl = $"{BaseUrl}{endpointUrl}";
 
         HttpRequestMessage hrm = new HttpRequestMessage(HttpMethod.Post, fullUrl);
 
-        hrm.Content = content;
+        // Configurar la solicitud POST con x-www-form-urlencoded
+        hrm.Content = new FormUrlEncodedContent(formData);
 
         return hrm;
     }
@@ -57,20 +53,14 @@ public static class ConfigurationHelper
     private static void ValidateConfigurationAndEndpoint(string endpoint)
     {
         if (_configuration == null)
-        {
             throw new InvalidOperationException("Configuration not initialized. Call Initialize before using this helper.");
-        }
-
+ 
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new InvalidOperationException("Endpoint configuration is missing or invalid.");
-        }
 
         endpointUrl = _configuration.GetValue<string>($"Vivec:Endpoints:{endpoint}");
 
         if (string.IsNullOrWhiteSpace(BaseUrl) || string.IsNullOrWhiteSpace(endpointUrl))
-        {
             throw new InvalidOperationException("BaseUrl or Endpoint configuration is missing or invalid.");
-        }
     }
 }

@@ -1,10 +1,4 @@
 ﻿
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using System.Configuration;
-using Vrt.Vivec.Svc.Application;
-using Vrt.Vivec.Svc.Clients.Vivec;
-using Vrt.Vivec.Svc.Helpers.Configuration;
-
 namespace Vrt.Vivec.Svc.Controllers;
 
 
