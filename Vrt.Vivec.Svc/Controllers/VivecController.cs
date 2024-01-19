@@ -1,4 +1,5 @@
 ﻿
+
 namespace Vrt.Vivec.Svc.Controllers;
 
 
@@ -7,10 +8,13 @@ namespace Vrt.Vivec.Svc.Controllers;
 public class VivecController : ControllerBase
 {
     private readonly ILoginAppService _loginAppService;
+    private readonly INewsAppService _newsAppService;
 
-    public VivecController(IUsuarioValidator usuarioValidator, IConfiguration configuration, ILoginAppService loginAppService)
+    public VivecController(IUsuarioValidator usuarioValidator, IConfiguration configuration, ILoginAppService loginAppService, INewsAppService newsAppService)
     {
         _loginAppService = loginAppService ?? throw new ArgumentNullException(nameof(loginAppService));
+
+        _newsAppService = newsAppService ?? throw new ArgumentNullException(nameof(newsAppService));
     }
 
 
@@ -22,6 +26,15 @@ public class VivecController : ControllerBase
     public async Task<IActionResult> Login([FromQuery] Usuario usuario)
     {
         return await _loginAppService.LoginAsync(usuario);
+    }
+
+    [HttpPost("News")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> News([FromQuery] string Token)
+    {
+        return await _newsAppService.NewsAsync(Token);
     }
 
     [HttpGet]
