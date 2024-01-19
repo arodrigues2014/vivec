@@ -28,13 +28,13 @@ public class VivecController : ControllerBase
         return await _loginAppService.LoginAsync(usuario);
     }
 
-    [HttpPost("News")]
+    [HttpPost("News/{token}")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> News([FromQuery] string Token)
+    public async Task<IActionResult> News(string token)
     {
-        return await _newsAppService.NewsAsync(Token);
+        return await _newsAppService.NewsAsync(token);
     }
 
     [HttpGet]
