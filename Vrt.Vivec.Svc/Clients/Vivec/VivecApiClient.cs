@@ -1,4 +1,6 @@
 ﻿
+using Vrt.Vivec.Svc.Exceptions;
+
 namespace Vrt.Vivec.Svc.Clients.Vivec;
 
 public class VivecApiClient : HttpClient
@@ -25,35 +27,35 @@ public class VivecApiClient : HttpClient
 
         // Configurar la dirección base y el tiempo de espera
         BaseAddress = new Uri(baseUrl);
+
         Timeout = TimeSpan.FromMinutes(10); // 10 minutos de tiempo de espera
     }
 
-    public async Task<string> SendRequest(HttpRequestMessage request)
+    public async Task<object> SendRequest(HttpRequestMessage request)
     {
-        var retryPolicy = Policy
-            .Handle<HttpRequestException>()
-            .Or<Exception>()  
-            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+        DialengaErrorDTO errorResponse = new DialengaErrorDTO();
 
         try
         {
-            return await retryPolicy.ExecuteAsync(async () =>
+     
+            var response = await SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
             {
-
-                var response = await SendAsync(request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadAsStringAsync();
-                }
-                else
-                {
-                    string errorResponse = await response.Content.ReadAsStringAsync();
-                    LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: errorResponse, ex: null);
-                    return errorResponse;
-                }
-
-            });
+                //return await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                string jsonString = await response.Content.ReadAsStringAsync();
+                errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
+                LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
+            }
+        }
+        catch (ApiVivecException ex)
+        {
+            return errorResponse;
         }
         catch (HttpRequestException ex)
         {

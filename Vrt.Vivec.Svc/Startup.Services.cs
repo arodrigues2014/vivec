@@ -1,4 +1,6 @@
-﻿namespace Vrt.Vivec.Svc;
+﻿using Vrt.Vivec.Svc.Validators;
+
+namespace Vrt.Vivec.Svc;
 
 public partial class Startup
 {

@@ -1,5 +1,7 @@
 ﻿
 
+using Vrt.Vivec.Svc.Validators;
+
 namespace Vrt.Vivec.Svc.Application;
 
 public interface ILoginAppService
@@ -40,11 +42,13 @@ public class LoginAppService : ILoginAppService
             {
                 ConfigurationHelper.Initialize(_configuration);
 
-                //_client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}")
+                var resultObject = await _client?.SendRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
 
-                var result = await _client?.SendRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
-
-                return new OkObjectResult(result != null ? result : false);
+                return resultObject switch
+                {
+                    DialengaErrorDTO _ => new OkObjectResult(resultObject),
+                    _ => new OkObjectResult(resultObject ?? false),
+                };
             }
         }
         catch (Exception ex)

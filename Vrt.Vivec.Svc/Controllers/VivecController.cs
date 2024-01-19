@@ -1,5 +1,7 @@
 ﻿
 
+using Vrt.Vivec.Svc.Validators;
+
 namespace Vrt.Vivec.Svc.Controllers;
 
 
@@ -32,6 +34,8 @@ public class VivecController : ControllerBase
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status401Unauthorized)]
+
     public async Task<IActionResult> News(string token)
     {
         return await _newsAppService.NewsAsync(token);
