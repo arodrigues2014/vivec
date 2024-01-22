@@ -6,7 +6,6 @@ namespace Vrt.Vivec.Svc.Data.DTOs
         public int PageElements { get; set; }
         public int TotalPages { get; set; }
         public int TotalElements { get; set; }
-        public int TotalUnread { get; set; }
         public List<MensajesDTO>? Messages { get; set; }
     }
 
