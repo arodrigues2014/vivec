@@ -1,5 +1,4 @@
 ﻿
-
 namespace Vrt.Vivec.Svc.Helpers.Configuration;
 
 public static class ConfigurationHelper
@@ -10,6 +9,7 @@ public static class ConfigurationHelper
     public static void Initialize(IConfiguration configuration)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
     }
 
     public static HttpRequestMessage VivecPostNewsRequest(string endpoint)

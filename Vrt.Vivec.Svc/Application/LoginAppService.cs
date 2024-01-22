@@ -1,24 +1,20 @@
 ﻿
-
-using Vrt.Vivec.Svc.Validators;
-
 namespace Vrt.Vivec.Svc.Application;
 
 public interface ILoginAppService
 {
-    Task<IActionResult> LoginAsync(Usuario usuario);
+    Task<IActionResult> LoginAsync(bool conductor);
 }
 
 // Implementación del servicio de aplicación
 public class LoginAppService : ILoginAppService
 {
-    private readonly IUsuarioValidator _usuarioValidator;
     private readonly IConfiguration _configuration;
     private VivecApiClient? _client;
 
-    public LoginAppService(IUsuarioValidator usuarioValidator, IConfiguration configuration)
+    public LoginAppService(IConfiguration configuration)
     {
-        _usuarioValidator = usuarioValidator ?? throw new ArgumentNullException(nameof(usuarioValidator));
+        
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 
@@ -27,28 +23,26 @@ public class LoginAppService : ILoginAppService
         return new VivecApiClient(_configuration);
     }
 
-    public async Task<IActionResult> LoginAsync(Usuario usuario)
+    public async Task<IActionResult> LoginAsync(bool conductor)
     {
         try
         {
-            var validationResult = _usuarioValidator.Validate(usuario);
-
-            if (!validationResult.IsValid)
-            {
-                return new BadRequestObjectResult(new ErrorResultHelper(usuario, validationResult.Errors));
-            }
-
+            
             using (_client = GetClient())
             {
                 ConfigurationHelper.Initialize(_configuration);
 
                 var resultObject = await _client?.SendRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
 
-                return resultObject switch
+                var result = resultObject switch
                 {
                     DialengaErrorDTO _ => new OkObjectResult(resultObject),
-                    _ => new OkObjectResult(resultObject ?? false),
+                    _ => resultObject is UserDTO ssoConfig
+                        ? SsoConfig(ssoConfig, conductor)
+                          : new OkObjectResult(false),
                 };
+
+                return result;
             }
         }
         catch (Exception ex)
@@ -57,4 +51,31 @@ public class LoginAppService : ILoginAppService
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
     }
+
+    Func<UserDTO, bool,  IActionResult> SsoConfig = (ssoConfig, conductor) =>
+    {
+        var result = ssoConfig?.company?.configuration?.loginConfiguration?.ssoConfigs?.ToList();
+        if ((result.Any()))
+        {
+            int x = 0;
+            if (!conductor)
+                x = 1;
+
+            LoginDTO loginDTO = new LoginDTO
+            {
+                loginURL = result[x].loginURL,
+                clientSecret = result[x].clientSecret,
+                clientId = result[x].clientId
+            };
+
+            // Return OkObjectResult with the evaluated ssoConfig
+            return new OkObjectResult(loginDTO);
+        }
+        else
+        {
+            // Return OkObjectResult with false if the condition is not met
+            return new OkObjectResult(false);
+        }
+    };
+
 }

@@ -36,6 +36,8 @@ public class VivecApiClient : HttpClient
 
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
 
+        UserDTO userResponse = new UserDTO();
+
         try
         {
      
@@ -43,7 +45,9 @@ public class VivecApiClient : HttpClient
 
             if (response.IsSuccessStatusCode)
             {
-                //return await response.Content.ReadAsStringAsync();
+                string jsonString = await response.Content.ReadAsStringAsync();
+                userResponse = JsonConvert.DeserializeObject<UserDTO>(jsonString);
+                return userResponse;
             }
             else
             {
