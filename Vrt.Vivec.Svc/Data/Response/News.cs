@@ -10,7 +10,6 @@
 
     public class MessageDTO
     {
-        public int Id { get; set; }
         public CategoryDTO? Category { get; set; }
         public DateTime PublicationDate { get; set; }
         public DateTime LastModifiedDate { get; set; }

@@ -10,8 +10,7 @@ namespace Vrt.Vivec.Svc.Data.DTOs
     }
 
     public class MensajesDTO
-    {
-        public int Id { get; set; }
+    { 
         public CategoryDTO? Category { get; set; }
         [JsonConverter(typeof(EpochDateTimeConverterHelper))]
         public DateTime PublicationDate { get; set; }
