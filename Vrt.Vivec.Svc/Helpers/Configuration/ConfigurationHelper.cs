@@ -30,24 +30,6 @@ public static class ConfigurationHelper
         return hrm;
     }
 
-    //public static HttpRequestMessage VivecPostNewsRequest(string endpoint)
-    //{
-    //    ValidateConfigurationAndEndpoint(endpoint);
-
-    //    string fullUrl = $"{BaseUrl}{endpointUrl}";
-
-    //    var formBody = new List<KeyValuePair<string, string>>
-    //    {
-    //        new KeyValuePair<string, string>("page", "0"),
-    //    };
-
-    //    HttpRequestMessage hrm = new HttpRequestMessage(HttpMethod.Post, fullUrl);
-
-    //    // Configurar la solicitud POST con x-www-form-urlencoded
-    //    hrm.Content = new FormUrlEncodedContent(formBody);
-
-    //    return hrm;
-    //}
     public static HttpRequestMessage VivecPostLoginRequest(string endpoint)
     {
         ValidateConfigurationAndEndpoint(endpoint);

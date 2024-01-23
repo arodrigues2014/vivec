@@ -29,7 +29,7 @@ public class VivecController : ControllerBase
     }
 
     [HttpPost("News")]
-    [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NewsDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status401Unauthorized)]
@@ -106,10 +106,20 @@ public class VivecController : ControllerBase
         foreach (var message in newsDTO.Messages)
         {
             var html = message.Text;
+
+            // Crear un objeto HtmlDocument
             HtmlDocument doc = new HtmlDocument();
+
+            // Cargar el HTML en el objeto HtmlDocument
             doc.LoadHtml(html);
-            string s = doc.DocumentNode.SelectSingleNode("//body").InnerText;
+
+            // Obtener el contenido completo del HTML utilizando InnerText
+            string innerText = doc.DocumentNode.InnerText;
+
+            // Realizar la lógica con innerText según sea necesario
+            // ...
         }
+
         // Crear una instancia del mapeador
         var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
 

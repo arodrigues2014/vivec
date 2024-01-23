@@ -1,5 +1,5 @@
 ﻿
-using Microsoft.IdentityModel.Tokens;
+using Vrt.Vivec.Svc.Data.Response;
 using Vrt.Vivec.Svc.Exceptions;
 
 namespace Vrt.Vivec.Svc.Clients.Vivec;
@@ -37,8 +37,6 @@ public class VivecApiClient : HttpClient
 
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
 
-        NewsDTO userResponse = new NewsDTO();
-
         try
         {
 
@@ -46,15 +44,43 @@ public class VivecApiClient : HttpClient
 
             if (response.IsSuccessStatusCode)
             {
+              
                 string jsonString = await response.Content.ReadAsStringAsync();
-                userResponse = JsonConvert.DeserializeObject<NewsDTO>(jsonString);
-                return userResponse;
+
+                var settings = new JsonSerializerSettings
+                {
+                    Converters = { new EpochDateTimeConverterHelper() }
+                };
+
+                NewsDTO newsDTO = JsonConvert.DeserializeObject<NewsDTO>(jsonString, settings);
+
+                foreach (var message in newsDTO.Messages)
+                {
+                    var html = message.Text;
+
+                    // Crear un objeto HtmlDocument
+                    HtmlDocument doc = new HtmlDocument();
+
+                    // Cargar el HTML en el objeto HtmlDocument
+                    doc.LoadHtml(html);
+
+                    // Obtener el contenido completo del HTML utilizando InnerText
+                    string innerText = doc.DocumentNode.InnerText;
+
+                    message.Text = innerText;
+                }
+
+                return newsDTO;
+               
             }
             else
             {
                 string jsonString = await response.Content.ReadAsStringAsync();
+
                 errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
+
                 LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+
                 throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
             }
         }

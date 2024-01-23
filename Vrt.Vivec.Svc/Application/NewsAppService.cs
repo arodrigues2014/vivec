@@ -37,11 +37,14 @@ public class NewsAppService : INewsAppService
 
                 var resultObject = await _client?.SendRequest(ConfigurationHelper.VivecPostNewsRequest("Inbox"));
 
-                return resultObject switch
+                IActionResult result = resultObject switch
                 {
                     DialengaErrorDTO _ => new OkObjectResult(resultObject),
-                    _ => new OkObjectResult(resultObject ?? false),
+                    NewsDTO news => new OkObjectResult(resultObject),
+                    _ => new OkObjectResult(null),
                 };
+
+                return result;
             }
         }
         catch (Exception ex)
