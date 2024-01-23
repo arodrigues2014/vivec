@@ -17,4 +17,5 @@
         public string? Text { get; set; }
         public string? ImageURL { get; set; }
     }
+
 }

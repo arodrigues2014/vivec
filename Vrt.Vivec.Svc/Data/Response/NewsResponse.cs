@@ -1,4 +1,6 @@
-﻿namespace Vrt.Vivec.Svc.Data.Response
+﻿
+
+namespace Vrt.Vivec.Svc.Data.Response
 {
     public class NewsResponse
     {

@@ -40,7 +40,7 @@ public class NewsAppService : INewsAppService
                 IActionResult result = resultObject switch
                 {
                     DialengaErrorDTO _ => new OkObjectResult(resultObject),
-                    NewsDTO news => new OkObjectResult(resultObject),
+                    NewsHtmlDTO news => new OkObjectResult(resultObject),
                     _ => new OkObjectResult(null),
                 };
 

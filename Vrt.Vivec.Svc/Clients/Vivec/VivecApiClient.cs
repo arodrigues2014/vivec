@@ -1,5 +1,5 @@
 ﻿
-using Vrt.Vivec.Svc.Data.Response;
+using System.Linq;
 using Vrt.Vivec.Svc.Exceptions;
 
 namespace Vrt.Vivec.Svc.Clients.Vivec;
@@ -32,6 +32,7 @@ public class VivecApiClient : HttpClient
         Timeout = TimeSpan.FromMinutes(10); // 10 minutos de tiempo de espera
     }
 
+   
     public async Task<object> SendRequest(HttpRequestMessage request)
     {
 
@@ -39,7 +40,6 @@ public class VivecApiClient : HttpClient
 
         try
         {
-
             var response = await SendAsync(request);
 
             if (response.IsSuccessStatusCode)
@@ -54,24 +54,11 @@ public class VivecApiClient : HttpClient
 
                 NewsDTO newsDTO = JsonConvert.DeserializeObject<NewsDTO>(jsonString, settings);
 
-                foreach (var message in newsDTO.Messages)
-                {
-                    var html = message.Text;
+                var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
 
-                    // Crear un objeto HtmlDocument
-                    HtmlDocument doc = new HtmlDocument();
+                var news = mapper.Map<NewsDTO, NewsHtmlDTO>(newsDTO);
 
-                    // Cargar el HTML en el objeto HtmlDocument
-                    doc.LoadHtml(html);
-
-                    // Obtener el contenido completo del HTML utilizando InnerText
-                    string innerText = doc.DocumentNode.InnerText;
-
-                    message.Text = innerText;
-                }
-
-                return newsDTO;
-               
+                return news;               
             }
             else
             {

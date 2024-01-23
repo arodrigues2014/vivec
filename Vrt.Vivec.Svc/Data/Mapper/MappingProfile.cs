@@ -12,6 +12,7 @@ namespace Vrt.Vivec.Svc.Data.Mapper
             CreateMap<NewsDTO, News>();
             CreateMap<MensajesDTO, MessageDTO>();
             CreateMap<CategoryDTO, DTOs.CategoryDTO>();
+            CreateMap<NewsDTO, NewsHtmlDTO>();
         }
     }
 }
