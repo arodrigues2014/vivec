@@ -1,9 +1,8 @@
-﻿
-namespace Vrt.Vivec.Svc.Application;
+﻿namespace Vrt.Vivec.Svc.Application;
 
 public interface ILoginAppService
 {
-    Task<IActionResult> LoginAsync(bool conductor);
+    Task<IActionResult> LoginAsync();
 }
 
 // Implementación del servicio de aplicación
@@ -14,7 +13,6 @@ public class LoginAppService : ILoginAppService
 
     public LoginAppService(IConfiguration configuration)
     {
-        
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 
@@ -23,23 +21,21 @@ public class LoginAppService : ILoginAppService
         return new VivecApiClient(_configuration);
     }
 
-    public async Task<IActionResult> LoginAsync(bool conductor)
+    public async Task<IActionResult> LoginAsync()
     {
         try
         {
-            
             using (_client = GetClient())
             {
                 ConfigurationHelper.Initialize(_configuration);
 
-                var resultObject = await _client?.SendRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
+                var resultObject = await _client?.SendLoginRequest(ConfigurationHelper.VivecPostLoginRequest("Login"));
 
-                var result = resultObject switch
+                IActionResult result = resultObject switch
                 {
                     DialengaErrorDTO _ => new OkObjectResult(resultObject),
-                    _ => resultObject is UserDTO ssoConfig
-                        ? SsoConfig(ssoConfig, conductor)
-                          : new OkObjectResult(false),
+                    TokenResultDTO bearer => new OkObjectResult(resultObject),
+                    _ => new OkObjectResult(null),
                 };
 
                 return result;
@@ -51,31 +47,5 @@ public class LoginAppService : ILoginAppService
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
     }
-
-    Func<UserDTO, bool,  IActionResult> SsoConfig = (ssoConfig, conductor) =>
-    {
-        var result = ssoConfig?.company?.configuration?.loginConfiguration?.ssoConfigs?.ToList();
-        if ((result.Any()))
-        {
-            int x = 0;
-            if (!conductor)
-                x = 1;
-
-            LoginDTO loginDTO = new LoginDTO
-            {
-                loginURL = result[x].loginURL,
-                clientSecret = result[x].clientSecret,
-                clientId = result[x].clientId
-            };
-
-            // Return OkObjectResult with the evaluated ssoConfig
-            return new OkObjectResult(loginDTO);
-        }
-        else
-        {
-            // Return OkObjectResult with false if the condition is not met
-            return new OkObjectResult(false);
-        }
-    };
 
 }

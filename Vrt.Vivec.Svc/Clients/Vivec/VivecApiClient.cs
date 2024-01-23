@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.IdentityModel.Tokens;
 using Vrt.Vivec.Svc.Exceptions;
 
 namespace Vrt.Vivec.Svc.Clients.Vivec;
@@ -36,17 +37,17 @@ public class VivecApiClient : HttpClient
 
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
 
-        UserDTO userResponse = new UserDTO();
+        NewsDTO userResponse = new NewsDTO();
 
         try
         {
-     
+
             var response = await SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
                 string jsonString = await response.Content.ReadAsStringAsync();
-                userResponse = JsonConvert.DeserializeObject<UserDTO>(jsonString);
+                userResponse = JsonConvert.DeserializeObject<NewsDTO>(jsonString);
                 return userResponse;
             }
             else
@@ -70,7 +71,66 @@ public class VivecApiClient : HttpClient
             LogErrorAndThrow(ex: ex);
         }
 
-        return null; 
+        return null;
+    }
+
+    public async Task<object> SendLoginRequest(HttpRequestMessage request)
+    {
+
+        DialengaErrorDTO errorResponse = new DialengaErrorDTO();
+        TokenResultDTO bearerDTO = new TokenResultDTO();
+
+        try
+        {
+
+            var response = await SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                bearerDTO = ExtractBearerToken(response);
+
+                if (bearerDTO != null)
+                {
+                    return bearerDTO;
+                }
+            }
+            else
+            {
+                string jsonString = await response.Content.ReadAsStringAsync();
+                errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
+                LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
+            }
+        }
+        catch (ApiVivecException ex)
+        {
+            return errorResponse;
+        }
+        catch (HttpRequestException ex)
+        {
+            LogErrorAndThrow(ex: ex);
+        }
+        catch (Exception ex)
+        {
+            LogErrorAndThrow(ex: ex);
+        }
+
+        return null;
+    }
+
+    private TokenResultDTO ExtractBearerToken(HttpResponseMessage response)
+    {
+        var bearerDTO = new TokenResultDTO();
+
+        if (response.Headers.TryGetValues("Authorization", out var authorizationHeaders))
+        {
+            foreach (var authorizationHeader in authorizationHeaders)
+            {
+                bearerDTO.AccessToken = authorizationHeader.Replace("Bearer ", "");
+            }
+        }
+
+        return string.IsNullOrEmpty(bearerDTO.AccessToken) ? null : bearerDTO;
     }
 
     private void LogErrorAndThrow(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null )

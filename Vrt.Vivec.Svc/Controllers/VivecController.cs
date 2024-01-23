@@ -1,6 +1,5 @@
 ﻿
 
-
 namespace Vrt.Vivec.Svc.Controllers;
 
 
@@ -21,23 +20,23 @@ public class VivecController : ControllerBase
 
     [HttpPost("Login")]
     //[Authorize]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TokenResultDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Login([FromQuery] bool conductor)
+    public async Task<IActionResult> Login()
     {
-        return await _loginAppService.LoginAsync(conductor);
+        return  await _loginAppService.LoginAsync();
     }
 
-    [HttpPost("News/{token}")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [HttpPost("News")]
+    [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status401Unauthorized)]
 
-    public async Task<IActionResult> News(string token)
+    public async Task<IActionResult> News([FromBody] TokenResultDTO tokenResultDTO)
     {
-        return await _newsAppService.NewsAsync(token);
+        return await _newsAppService.NewsAsync(tokenResultDTO.AccessToken);
     }
 
     [HttpGet]
@@ -104,6 +103,13 @@ public class VivecController : ControllerBase
 
         NewsDTO newsDTO = JsonConvert.DeserializeObject<NewsDTO>(jsonResult, settings);
 
+        foreach (var message in newsDTO.Messages)
+        {
+            var html = message.Text;
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            string s = doc.DocumentNode.SelectSingleNode("//body").InnerText;
+        }
         // Crear una instancia del mapeador
         var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
 
