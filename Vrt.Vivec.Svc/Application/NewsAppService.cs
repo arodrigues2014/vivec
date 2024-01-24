@@ -16,7 +16,7 @@ public class NewsAppService : INewsAppService
         };
 
         if (page < 0)
-            return new OkObjectResult(_error);
+            return new BadRequestObjectResult(_error);
 
 
         try
@@ -32,7 +32,7 @@ public class NewsAppService : INewsAppService
                 Type resultObjectType = tokenResult?.GetType();
 
                 if (resultObjectType == typeof(DialengaErrorDTO))
-                    return new OkObjectResult(tokenResult);
+                    return new UnauthorizedObjectResult(tokenResult);
 
             }
 
