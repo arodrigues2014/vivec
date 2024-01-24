@@ -7,53 +7,57 @@ public interface INewsAppService
 
 public class NewsAppService : INewsAppService
 {
-
     public async Task<IActionResult> NewsAsync(int page)
     {
-        string token = string.Empty;
+        DialengaErrorDTO _error = new DialengaErrorDTO
+        {
+            Error = "Invalid page number",
+            LocalizedError = "NewsAsync"
+        };
 
         if (page < 0)
-        {
-            throw new InvalidOperationException("Page error.");
-        }
+            return new OkObjectResult(_error);
+
 
         try
         {
             var cliente = VivecApiClient.Instancia;
 
-            var resultObject = await cliente.ObtenerTokenAsync(ConfigurationHelper.VivecPostLoginRequest("login"));
+            DateTime currentDate = DateTime.UtcNow;
 
-            var _token = string.Empty;
-
-            Type resultObjectType = resultObject?.GetType();
-
-            string resultObjectTypeName = resultObjectType?.FullName;
-
-            if (resultObjectType == typeof(DialengaErrorDTO))
+            if (cliente._expirationDate <= currentDate)
             {
-                return new OkObjectResult(resultObject);
+                var tokenResult = await cliente.ObtenerTokenAsync(ConfigurationHelper.VivecPostLoginRequest("login"));
+                
+                Type resultObjectType = tokenResult?.GetType();
+
+                if (resultObjectType == typeof(DialengaErrorDTO))
+                    return new OkObjectResult(tokenResult);
+
             }
 
-            if (resultObjectType == typeof(TokenResultDTO))
+            if (!string.IsNullOrEmpty(cliente.Token))
             {
-                var tokenObj = (TokenResultDTO)resultObject;
-                _token = tokenObj.AccessToken;
+                var newsResult = await cliente.ObtenerNewsAsync(ConfigurationHelper.VivecPostNewsRequest("Inbox", page, cliente.Token));
+                var result = newsResult switch
+                {
+                    DialengaErrorDTO error => new OkObjectResult(error),
+                        _ => new OkObjectResult(newsResult)
+                };
+
+                return result;
             }
             else
             {
-                _token = resultObject.ToString();
+                DialengaErrorDTO error = new DialengaErrorDTO
+                {
+                    Error = "Invalid token",
+                    LocalizedError = "ObtenerTokenAsync"
+                };
+
+                return new OkObjectResult(error);
             }
-
-            var resultObjectNews = await cliente.ObtenerNewsAsync(ConfigurationHelper.VivecPostNewsRequest("Inbox", page, _token));
-
-            Type resultType = resultObjectNews?.GetType();
-
-            if (resultObjectType == typeof(DialengaErrorDTO))
-            {
-                return new OkObjectResult(resultObjectNews);
-            }
-
-            return new OkObjectResult(resultObjectNews);
+            
         }
         catch (HttpRequestException ex)
         {
@@ -62,7 +66,7 @@ public class NewsAppService : INewsAppService
         }
         catch (InvalidOperationException ex)
         {
-            Log.Logger.ForContext("Process", "Inbox").Error(ex, "Invalid page number");
+            Log.Logger.ForContext("Process", "Inbox").Error(ex, ex.Message);
             return new BadRequestResult();
         }
         catch (Exception ex)

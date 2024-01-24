@@ -19,5 +19,6 @@ global using Vrt.Vivec.Svc.Clients.Vivec;
 global using Vrt.Vivec.Svc.Helpers.Configuration;
 global using System.Net;
 global using Vrt.Vivec.Svc.Application;
-global using System.Collections.Generic;
 global using HtmlAgilityPack;
+global using System.IdentityModel.Tokens.Jwt;
+global using Vrt.Vivec.Svc.Exceptions;
