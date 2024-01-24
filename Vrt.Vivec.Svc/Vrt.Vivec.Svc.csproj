@@ -29,7 +29,6 @@
   <ItemGroup>
     <Folder Include="Data\Request\" />
     <Folder Include="Services\" />
-    <Folder Include="Validators\" />
   </ItemGroup>
 
 </Project>
