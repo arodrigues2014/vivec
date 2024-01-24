@@ -27,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Request\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
