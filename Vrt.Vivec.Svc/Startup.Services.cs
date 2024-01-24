@@ -11,7 +11,6 @@ public partial class Startup
 
     private void AddServices(IServiceCollection services)
     {
-        services.AddTransient<ILoginAppService, LoginAppService>();
         services.AddTransient<INewsAppService, NewsAppService>();
         services.AddAutoMapper(typeof(MappingProfile));
     }

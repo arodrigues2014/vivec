@@ -5,22 +5,23 @@ namespace Vrt.Vivec.Svc.Helpers.Configuration;
 
 public static class ConfigurationHelper
 {
-    private static IConfiguration _configuration;
+    private static IConfiguration _configuration= new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
     private static string? BaseUrl => _configuration.GetValue<string>("Vivec:BaseUrl");
     private static string? endpointUrl;
+    private static string? Page => _configuration.GetValue<string>("Vivec:Page");
     public static void Initialize(IConfiguration configuration)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
     }
 
-    public static HttpRequestMessage VivecPostNewsRequest(string endpoint)
+    public static HttpRequestMessage VivecPostNewsRequest(string endpoint,int pageNumber)
     {
         ValidateConfigurationAndEndpoint(endpoint);
 
         string fullUrl = $"{BaseUrl}{endpointUrl}";
 
-        var jsonBody = "{\"page\": 0}";
+        var jsonBody = $"{{\"page\": {pageNumber}}}";
 
         HttpRequestMessage hrm = new HttpRequestMessage(HttpMethod.Post, fullUrl);
 

@@ -7,36 +7,33 @@ namespace Vrt.Vivec.Svc.Controllers;
 [ApiController]
 public class VivecController : ControllerBase
 {
-    private readonly ILoginAppService _loginAppService;
     private readonly INewsAppService _newsAppService;
 
-    public VivecController(IConfiguration configuration, ILoginAppService loginAppService, INewsAppService newsAppService)
+    public VivecController(IConfiguration configuration, INewsAppService newsAppService)
     {
-        _loginAppService = loginAppService ?? throw new ArgumentNullException(nameof(loginAppService));
-
         _newsAppService = newsAppService ?? throw new ArgumentNullException(nameof(newsAppService));
     }
 
 
-    [HttpPost("Login")]
-    //[Authorize]
-    [ProducesResponseType(typeof(TokenResultDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Login()
-    {
-        return  await _loginAppService.LoginAsync();
-    }
+    //[HttpPost("Login")]
+    ////[Authorize]
+    //[ProducesResponseType(typeof(TokenResultDTO), StatusCodes.Status200OK)]
+    //[ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
+    //[ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
+    //public async Task<IActionResult> Login()
+    //{
+    //    return  await _loginAppService.LoginAsync();
+    //}
 
-    [HttpPost("News")]
+    [HttpGet("News/page")]
     [ProducesResponseType(typeof(NewsHtmlDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status401Unauthorized)]
 
-    public async Task<IActionResult> News([FromBody] TokenResultDTO tokenResultDTO)
+    public async Task<IActionResult> News([FromQuery] int page)
     {
-        return await _newsAppService.NewsAsync(tokenResultDTO.AccessToken);
+        return await _newsAppService.NewsAsync(page);
     }
 
     //[HttpGet]

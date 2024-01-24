@@ -1,41 +1,105 @@
 ﻿
-using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using Vrt.Vivec.Svc.Exceptions;
 
 namespace Vrt.Vivec.Svc.Clients.Vivec;
 
-public class VivecApiClient : HttpClient
+
+public sealed class VivecApiClient : HttpClient
 {
     private readonly IConfiguration _configuration;
+    private readonly HttpClient _httpClient;
+    private string _token;
+    private string BaseUrl;
+    private DateTime _expirationDate;
 
-    public VivecApiClient(IConfiguration configuration)
+    private static readonly VivecApiClient instancia = new VivecApiClient();
+
+    // Pasar IConfiguration como parámetro al constructor
+    private VivecApiClient()
     {
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-
-        InitializeApiClient();
+        _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        BaseUrl = _configuration.GetValue<string>("Vivec:BaseUrl");
+        _httpClient = new HttpClient
+        {
+            BaseAddress = new Uri(BaseUrl),
+            Timeout = TimeSpan.FromMinutes(10)
+        };
     }
 
-    private void InitializeApiClient()
-    {
-        // Obtener la dirección base desde la configuración
-        string baseUrl = _configuration.GetValue<string>("Vivec:BaseUrl");
+    public static VivecApiClient Instancia => instancia;
 
-        // Validar que la dirección base no sea nula o vacía
-        if (string.IsNullOrWhiteSpace(baseUrl))
+    public async Task<object> ObtenerTokenAsync(HttpRequestMessage request)
+    {
+        DialengaErrorDTO errorResponse = new DialengaErrorDTO();
+        TokenResultDTO bearerDTO = new TokenResultDTO();
+
+        try
         {
-            throw new InvalidOperationException("The base address in the configuration is null or empty.");
+            DateTime currentDate = DateTime.UtcNow;
+
+            if (_expirationDate <= currentDate)
+            {
+                _token = string.Empty;
+            }
+
+            // Verificar si ya se ha obtenido un token
+            if (string.IsNullOrEmpty(_token))
+            {
+
+                // Realizar la llamada POST al endpoint de login
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    bearerDTO = ExtractBearerToken(response);
+
+                    if (bearerDTO != null)
+                    {
+                        var tokenHandler = new JwtSecurityTokenHandler();
+
+                        var jwtToken = tokenHandler.ReadToken(bearerDTO.AccessToken) as JwtSecurityToken;
+
+                        if (jwtToken != null)
+                        {
+                            _expirationDate = jwtToken.ValidTo;
+                        }
+
+                        _token = bearerDTO.AccessToken;
+
+                        return bearerDTO;
+                    }
+                }
+                else
+                {
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
+                    LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                    throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
+                }
+            }
+        }
+        catch (ApiVivecException ex)
+        {
+            // Manejar la excepción ApiVivec
+            return errorResponse;
+        }
+        catch (HttpRequestException ex)
+        {
+            // Manejar la excepción HttpRequest
+            LogErrorAndThrow(ex: ex);
+        }
+        catch (Exception ex)
+        {
+            // Manejar otras excepciones
+            LogErrorAndThrow(ex: ex);
         }
 
-        // Configurar la dirección base y el tiempo de espera
-        BaseAddress = new Uri(baseUrl);
-
-        Timeout = TimeSpan.FromMinutes(10); // 10 minutos de tiempo de espera
+        return _token;
     }
 
-   
-    public async Task<object> SendRequest(HttpRequestMessage request)
+    public async Task<object> ObtenerNewsAsync(HttpRequestMessage request)
     {
-
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
 
         try
@@ -44,7 +108,7 @@ public class VivecApiClient : HttpClient
 
             if (response.IsSuccessStatusCode)
             {
-              
+
                 string jsonString = await response.Content.ReadAsStringAsync();
 
                 var settings = new JsonSerializerSettings
@@ -58,7 +122,7 @@ public class VivecApiClient : HttpClient
 
                 var news = mapper.Map<NewsDTO, NewsHtmlDTO>(newsDTO);
 
-                return news;               
+                return news;
             }
             else
             {
@@ -86,49 +150,15 @@ public class VivecApiClient : HttpClient
 
         return null;
     }
-
-    public async Task<object> SendLoginRequest(HttpRequestMessage request)
+    
+    private void LogErrorAndThrow(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null)
     {
+        string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
 
-        DialengaErrorDTO errorResponse = new DialengaErrorDTO();
-        TokenResultDTO bearerDTO = new TokenResultDTO();
-
-        try
+        if (statusCode != HttpStatusCode.InternalServerError || !string.IsNullOrEmpty(errorResponse))
         {
-
-            var response = await SendAsync(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                bearerDTO = ExtractBearerToken(response);
-
-                if (bearerDTO != null)
-                {
-                    return bearerDTO;
-                }
-            }
-            else
-            {
-                string jsonString = await response.Content.ReadAsStringAsync();
-                errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
-                LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
-                throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
-            }
+            Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: {statusCode}, Response: {errorResponse}");
         }
-        catch (ApiVivecException ex)
-        {
-            return errorResponse;
-        }
-        catch (HttpRequestException ex)
-        {
-            LogErrorAndThrow(ex: ex);
-        }
-        catch (Exception ex)
-        {
-            LogErrorAndThrow(ex: ex);
-        }
-
-        return null;
     }
 
     private TokenResultDTO ExtractBearerToken(HttpResponseMessage response)
@@ -145,14 +175,5 @@ public class VivecApiClient : HttpClient
 
         return string.IsNullOrEmpty(bearerDTO.AccessToken) ? null : bearerDTO;
     }
-
-    private void LogErrorAndThrow(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null )
-    {
-        string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
-
-        if (statusCode != HttpStatusCode.InternalServerError || !string.IsNullOrEmpty(errorResponse))
-        {
-            Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: {statusCode}, Response: {errorResponse}");
-        }
-    }
+    public string Token => _token;
 }
