@@ -7,7 +7,7 @@ public interface INewsAppService
 
 public class NewsAppService : INewsAppService
 {
-    public async Task<IActionResult> NewsAsync(int page)
+    public async Task<IActionResult> NewsAsync(int pageNumber)
     {
         DialengaErrorDTO _error = new DialengaErrorDTO
         {
@@ -15,7 +15,7 @@ public class NewsAppService : INewsAppService
             LocalizedError = "NewsAsync"
         };
 
-        if (page < 0)
+        if (pageNumber < 0)
             return new BadRequestObjectResult(_error);
 
 
@@ -38,7 +38,7 @@ public class NewsAppService : INewsAppService
 
             if (!string.IsNullOrEmpty(cliente.Token))
             {
-                var newsResult = await cliente.ObtenerNewsAsync(ConfigurationHelper.VivecPostNewsRequest("Inbox", page, cliente.Token));
+                var newsResult = await cliente.ObtenerNewsAsync(ConfigurationHelper.VivecPostNewsRequest("Inbox", pageNumber, cliente.Token));
                 var result = newsResult switch
                 {
                     DialengaErrorDTO error => new OkObjectResult(error),

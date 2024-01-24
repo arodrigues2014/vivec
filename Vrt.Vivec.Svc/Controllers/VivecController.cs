@@ -14,12 +14,12 @@ public class VivecController : ControllerBase
         _newsAppService = newsAppService ?? throw new ArgumentNullException(nameof(newsAppService));
     }
 
-    [HttpGet("News/page")]
+    [HttpGet("News/pageNumber")]
     [ProducesResponseType(typeof(NewsHtmlDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status401Unauthorized)]
 
-    public Task<IActionResult> News([FromQuery] int page) => _newsAppService.NewsAsync(page);
+    public Task<IActionResult> News([FromQuery] int pageNumber) => _newsAppService.NewsAsync(pageNumber);
 
 }
