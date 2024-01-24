@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace Vrt.Vivec.Svc.Helpers.Configuration;
@@ -15,9 +16,11 @@ public static class ConfigurationHelper
 
     }
 
-    public static HttpRequestMessage VivecPostNewsRequest(string endpoint,int pageNumber)
+    public static HttpRequestMessage VivecPostNewsRequest(string endpoint,int pageNumber,string token)
     {
         ValidateConfigurationAndEndpoint(endpoint);
+
+        endpointUrl = _configuration.GetValue<string>($"Vivec:Endpoints:{endpoint}");
 
         string fullUrl = $"{BaseUrl}{endpointUrl}";
 
@@ -27,6 +30,8 @@ public static class ConfigurationHelper
 
         // Configurar la solicitud POST con contenido JSON
         hrm.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+        
+        hrm.Headers.Add("Authorization", $"Bearer {token}");
 
         return hrm;
     }
@@ -48,6 +53,8 @@ public static class ConfigurationHelper
             new KeyValuePair<string, string>("username", username),
             new KeyValuePair<string, string>("password", password)
         };
+
+        endpointUrl = _configuration.GetValue<string>($"Vivec:Endpoints:{endpoint}");
 
         string fullUrl = $"{BaseUrl}{endpointUrl}";
 

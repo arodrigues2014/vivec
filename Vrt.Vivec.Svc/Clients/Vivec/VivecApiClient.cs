@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using Vrt.Vivec.Svc.Exceptions;
 
@@ -95,7 +96,7 @@ public sealed class VivecApiClient : HttpClient
             LogErrorAndThrow(ex: ex);
         }
 
-        return _token;
+        return bearerDTO.AccessToken = _token;
     }
 
     public async Task<object> ObtenerNewsAsync(HttpRequestMessage request)
@@ -104,6 +105,7 @@ public sealed class VivecApiClient : HttpClient
 
         try
         {
+           
             var response = await SendAsync(request);
 
             if (response.IsSuccessStatusCode)
