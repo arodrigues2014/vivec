@@ -15,6 +15,7 @@ public class VivecController : ControllerBase
     }
 
     [HttpGet("News")]
+    [Produces("application/json")]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(DialengaErrorDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(NewsHtmlDTO), StatusCodes.Status200OK)] 
