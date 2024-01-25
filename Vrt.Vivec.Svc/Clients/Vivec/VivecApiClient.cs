@@ -1,8 +1,4 @@
-﻿
-
-using Azure;
-
-namespace Vrt.Vivec.Svc.Clients.Vivec;
+﻿namespace Vrt.Vivec.Svc.Clients.Vivec;
 
 
 public sealed class VivecApiClient : HttpClient
@@ -15,7 +11,6 @@ public sealed class VivecApiClient : HttpClient
 
     private static readonly VivecApiClient instancia = new VivecApiClient();
 
-    // Pasar IConfiguration como parámetro al constructor
     private VivecApiClient()
     {
         _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -30,7 +25,7 @@ public sealed class VivecApiClient : HttpClient
     public string Token => _token;
     public static VivecApiClient Instancia => instancia;
 
-    public async Task<object> GetTokenAsync(HttpRequestMessage request)
+    private async Task<object> GetTokenAsync(HttpRequestMessage request)
     {
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
         TokenResultDTO bearerDTO = new TokenResultDTO();
