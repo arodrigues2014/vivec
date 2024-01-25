@@ -72,11 +72,13 @@ public sealed class VivecApiClient : HttpClient
         {
             // Manejar la excepción HttpRequest
             LogError(ex: ex);
+            return errorResponse.Error = ex.Message;
         }
         catch (Exception ex)
         {
             // Manejar otras excepciones
             LogError(ex: ex);
+            return errorResponse.Error = ex.Message;
         }
 
         return null;
@@ -150,10 +152,12 @@ public sealed class VivecApiClient : HttpClient
         catch (HttpRequestException ex)
         {
             LogError(ex: ex);
+            return errorResponse.Error = ex.Message;
         }
         catch (Exception ex)
         {
             LogError(ex: ex);
+            return errorResponse.Error= ex.Message;
         }
 
         return null;
@@ -163,10 +167,7 @@ public sealed class VivecApiClient : HttpClient
     {
         string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
 
-        if (statusCode != HttpStatusCode.InternalServerError || !string.IsNullOrEmpty(errorResponse))
-        {
-            Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: {statusCode}, Response: {errorResponse}");
-        }
+        Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: " + errorMessage);
     }
 
     private TokenResultDTO ExtractBearerToken(HttpResponseMessage response)
