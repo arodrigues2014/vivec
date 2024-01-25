@@ -16,7 +16,7 @@ public static class ConfigurationHelper
 
     }
 
-    public static HttpRequestMessage VivecPostNewsRequest(string endpoint,int pageNumber,string token)
+    public static HttpRequestMessage VivecPostNewsRequest(string endpoint,int page,string token)
     {
         ValidateConfigurationAndEndpoint(endpoint);
 
@@ -24,7 +24,7 @@ public static class ConfigurationHelper
 
         string fullUrl = $"{BaseUrl}{endpointUrl}";
 
-        var jsonBody = $"{{\"page\": {pageNumber}}}";
+        var jsonBody = $"{{\"page\": {page}}}";
 
         HttpRequestMessage hrm = new HttpRequestMessage(HttpMethod.Post, fullUrl);
 

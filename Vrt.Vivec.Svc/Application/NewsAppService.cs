@@ -7,7 +7,7 @@ public interface INewsAppService
 
 public class NewsAppService : INewsAppService
 {
-    public async Task<IActionResult> NewsAsync(int pageNumber)
+    public async Task<IActionResult> NewsAsync(int page)
     {
         DialengaErrorDTO _error = new DialengaErrorDTO
         {
@@ -15,49 +15,21 @@ public class NewsAppService : INewsAppService
             LocalizedError = "NewsAsync"
         };
 
-        if (pageNumber < 0)
+        if (page < 0)
             return new BadRequestObjectResult(_error);
-
 
         try
         {
             var cliente = VivecApiClient.Instancia;
-
-            DateTime currentDate = DateTime.UtcNow;
-
-            if (cliente._expirationDate <= currentDate)
+            var newsResult = await cliente.GetNewsAsync(page);
+            var result = newsResult switch
             {
-                var tokenResult = await cliente.ObtenerTokenAsync(ConfigurationHelper.VivecPostLoginRequest("login"));
-                
-                Type resultObjectType = tokenResult?.GetType();
+                DialengaErrorDTO error => new OkObjectResult(error),
+                _ => new OkObjectResult(newsResult)
+            };
 
-                if (resultObjectType == typeof(DialengaErrorDTO))
-                    return new UnauthorizedObjectResult(tokenResult);
+            return result;
 
-            }
-
-            if (!string.IsNullOrEmpty(cliente.Token))
-            {
-                var newsResult = await cliente.ObtenerNewsAsync(ConfigurationHelper.VivecPostNewsRequest("Inbox", pageNumber, cliente.Token));
-                var result = newsResult switch
-                {
-                    DialengaErrorDTO error => new OkObjectResult(error),
-                        _ => new OkObjectResult(newsResult)
-                };
-
-                return result;
-            }
-            else
-            {
-                DialengaErrorDTO error = new DialengaErrorDTO
-                {
-                    Error = "Invalid token",
-                    LocalizedError = "ObtenerTokenAsync"
-                };
-
-                return new OkObjectResult(error);
-            }
-            
         }
         catch (HttpRequestException ex)
         {

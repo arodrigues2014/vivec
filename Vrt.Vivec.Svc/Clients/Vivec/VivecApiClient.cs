@@ -1,5 +1,7 @@
 ﻿
 
+using Azure;
+
 namespace Vrt.Vivec.Svc.Clients.Vivec;
 
 
@@ -28,7 +30,7 @@ public sealed class VivecApiClient : HttpClient
     public string Token => _token;
     public static VivecApiClient Instancia => instancia;
 
-    public async Task<object> ObtenerTokenAsync(HttpRequestMessage request)
+    public async Task<object> GetTokenAsync(HttpRequestMessage request)
     {
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
         TokenResultDTO bearerDTO = new TokenResultDTO();
@@ -62,7 +64,7 @@ public sealed class VivecApiClient : HttpClient
             {
                 string jsonString = await response.Content.ReadAsStringAsync();
                 errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
-                LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                LogError(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
                 throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
             }
         }
@@ -74,53 +76,76 @@ public sealed class VivecApiClient : HttpClient
         catch (HttpRequestException ex)
         {
             // Manejar la excepción HttpRequest
-            LogErrorAndThrow(ex: ex);
+            LogError(ex: ex);
         }
         catch (Exception ex)
         {
             // Manejar otras excepciones
-            LogErrorAndThrow(ex: ex);
+            LogError(ex: ex);
         }
 
         return null;
     }
 
-    public async Task<object> ObtenerNewsAsync(HttpRequestMessage request)
+    public async Task<object> GetNewsAsync(int page)
     {
         DialengaErrorDTO errorResponse = new DialengaErrorDTO();
 
         try
-        {
+        {           
 
-            var response = await SendAsync(request);
+            DateTime currentDate = DateTime.UtcNow;
 
-            if (response.IsSuccessStatusCode)
+            if (_expirationDate <= currentDate)
             {
-
-                string jsonString = await response.Content.ReadAsStringAsync();
-
-                var settings = new JsonSerializerSettings
+              
+                var response = await GetTokenAsync(ConfigurationHelper.VivecPostLoginRequest("login"));
+                if (response != null)
                 {
-                    Converters = { new EpochDateTimeConverterHelper() }
-                };
+                    Type resultObjectType = response?.GetType();
 
-                NewsDTO newsDTO = JsonConvert.DeserializeObject<NewsDTO>(jsonString, settings);
+                    if (resultObjectType == typeof(DialengaErrorDTO))
+                    {
+                        return (DialengaErrorDTO)response;
+                    }
 
-                var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
-
-                var news = mapper.Map<NewsDTO, NewsHtmlDTO>(newsDTO);
-
-                return news;
+                }
             }
-            else
+
+            var request = ConfigurationHelper.VivecPostNewsRequest("Inbox", page, Token);
+
+            if (request != null)
             {
-                string jsonString = await response.Content.ReadAsStringAsync();
+                var response = await SendAsync(request);
 
-                errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
+                if (response.IsSuccessStatusCode)
+                {
 
-                LogErrorAndThrow(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                    string jsonString = await response.Content.ReadAsStringAsync();
 
-                throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = { new EpochDateTimeConverterHelper() }
+                    };
+
+                    NewsDTO newsDTO = JsonConvert.DeserializeObject<NewsDTO>(jsonString, settings);
+
+                    var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
+
+                    var news = mapper.Map<NewsDTO, NewsHtmlDTO>(newsDTO);
+
+                    return news;
+                }
+                else
+                {
+                    string jsonString = await response.Content.ReadAsStringAsync();
+
+                    errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
+
+                    LogError(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+
+                    throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
+                }
             }
         }
         catch (ApiVivecException ex)
@@ -129,17 +154,17 @@ public sealed class VivecApiClient : HttpClient
         }
         catch (HttpRequestException ex)
         {
-            LogErrorAndThrow(ex: ex);
+            LogError(ex: ex);
         }
         catch (Exception ex)
         {
-            LogErrorAndThrow(ex: ex);
+            LogError(ex: ex);
         }
 
         return null;
     }
 
-    private void LogErrorAndThrow(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null)
+    private void LogError(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null)
     {
         string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
 
