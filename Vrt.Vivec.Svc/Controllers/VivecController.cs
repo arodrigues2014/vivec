@@ -25,6 +25,7 @@ public class VivecController : ControllerBase
         try
         {
             var result = await _newsAppService.NewsAsync(page);
+            if (result == null) return BadRequest("The request is not valid.");
 
             return result;
         }
