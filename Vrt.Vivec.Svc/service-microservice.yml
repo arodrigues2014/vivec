@@ -1,0 +1,13 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mi-aplicacion
+spec:
+  selector:
+    app: mi-aplicacion
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080 # El puerto en el que tu aplicación está escuchando en los pods
+  type: NodePort # O LoadBalancer si tu clúster de Kubernetes se ejecuta en la nube pública

@@ -1,0 +1,21 @@
+        # deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mi-aplicacion-deployment
+spec:
+  replicas: 3 # Número deseado de réplicas de tu aplicación
+  selector:
+    matchLabels:
+      app: mi-aplicacion
+  template:
+    metadata:
+      labels:
+        app: mi-aplicacion
+    spec:
+      containers:
+      - name: micro-container
+        image: 209583672998.dkr.ecr.eu-west-2.amazonaws.com/v1 # Asegúrate de reemplazar con tu imagen de Docker
+        ports:
+        - containerPort: 8080 # El puerto en el que tu aplicación está escuchando
+

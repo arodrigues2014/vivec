@@ -1,0 +1,11 @@
+docker run --hostname=97a7e80d5c73 --user=app --mac-address=02:42:ac:11:00:02 
+--env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env=APP_UID=1654 
+--env=ASPNETCORE_HTTP_PORTS=8080 --env=DOTNET_RUNNING_IN_CONTAINER=true --env=DOTNET_VERSION=8.0.1 
+--env=ASPNET_VERSION=8.0.1 --workdir=/app 
+--runtime=runc -d -p 8080:8080 vrtvivec:v1
+
+
+http://localhost:8080/api/v1/Vivec/News?page=0
+
+eksctl create cluster --name microservice --region eu-west-2 --nodegroup-name micro-workes 
+--node-type t3.medium --nodes 1 --nodes-min 1 --nodes-max 1 --managed

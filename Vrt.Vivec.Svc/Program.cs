@@ -7,20 +7,20 @@ Startup startUp = new Startup(builder.Configuration);
 
 startUp.AddJsonSettings(builder.Services);
 
-startUp.AddAuthentication(builder.Services, builder.Environment.IsProduction());
+//startUp.AddAuthentication(builder.Services, builder.Environment.IsProduction());
 
 startUp.AddDomainConfiguration(builder.Services);
 
-startUp.AddApiExplorer(builder.Services);
+//startUp.AddApiExplorer(builder.Services);
 
-startUp.AddSwaggerGen(builder.Services);
+//startUp.AddSwaggerGen(builder.Services);
 
-Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(builder.Configuration)
-                .Enrich.FromLogContext()
-                .CreateLogger();
+//Log.Logger = new LoggerConfiguration()
+//                .ReadFrom.Configuration(builder.Configuration)
+//                .Enrich.FromLogContext()
+//                .CreateLogger();
 
-builder.Logging.AddSerilog(Log.Logger);
+//builder.Logging.AddSerilog(Log.Logger);
 
 WebApplication app = builder.Build();
 
@@ -36,7 +36,7 @@ app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 
-startUp.ConfigureSwagger(app);
+//startUp.ConfigureSwagger(app);
 
 app.UseAuthentication();
 
@@ -46,6 +46,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseSwagger();
+//app.UseSwagger();
 
 app.Run();

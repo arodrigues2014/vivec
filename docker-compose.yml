@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  vrt.vivec.svc:
-    image: vrt.vivec.svc
-    build:
-      context: .
-      dockerfile: Vrt.Vivec.Svc/Dockerfile

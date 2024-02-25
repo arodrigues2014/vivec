@@ -33,17 +33,17 @@ public class NewsAppService : INewsAppService
         }
         catch (HttpRequestException ex)
         {
-            Log.Logger.ForContext("Process", "Inbox").Error(ex, "HttpRequestException thrown getting data from Vivec");
+            //Log.Logger.ForContext("Process", "Inbox").Error(ex, "HttpRequestException thrown getting data from Vivec");
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
         catch (InvalidOperationException ex)
         {
-            Log.Logger.ForContext("Process", "Inbox").Error(ex, ex.Message);
+            //Log.Logger.ForContext("Process", "Inbox").Error(ex, ex.Message);
             return new BadRequestResult();
         }
         catch (Exception ex)
         {
-            Log.Logger.ForContext("Process", "Inbox").Error(ex, "Exception thrown getting data from Vivec");
+            //Log.Logger.ForContext("Process", "Inbox").Error(ex, "Exception thrown getting data from Vivec");
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
 

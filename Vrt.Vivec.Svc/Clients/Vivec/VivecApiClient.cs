@@ -59,7 +59,7 @@ public sealed class VivecApiClient : HttpClient
             {
                 string jsonString = await response.Content.ReadAsStringAsync();
                 errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
-                LogError(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                //LogError(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
                 throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
             }
         }
@@ -71,13 +71,13 @@ public sealed class VivecApiClient : HttpClient
         catch (HttpRequestException ex)
         {
             // Manejar la excepción HttpRequest
-            LogError(ex: ex);
+            //LogError(ex: ex);
             return errorResponse.Error = ex.Message;
         }
         catch (Exception ex)
         {
             // Manejar otras excepciones
-            LogError(ex: ex);
+            //LogError(ex: ex);
             return errorResponse.Error = ex.Message;
         }
 
@@ -139,7 +139,7 @@ public sealed class VivecApiClient : HttpClient
 
                     errorResponse = JsonConvert.DeserializeObject<DialengaErrorDTO>(jsonString);
 
-                    LogError(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
+                    //LogError(statusCode: response.StatusCode, errorResponse: jsonString, ex: null);
 
                     throw new ApiVivecException(statusCode: response.StatusCode, errorResponse: errorResponse, message: "Error occurred during HTTP request.");
                 }
@@ -151,24 +151,24 @@ public sealed class VivecApiClient : HttpClient
         }
         catch (HttpRequestException ex)
         {
-            LogError(ex: ex);
+            //LogError(ex: ex);
             return errorResponse.Error = ex.Message;
         }
         catch (Exception ex)
         {
-            LogError(ex: ex);
+            //LogError(ex: ex);
             return errorResponse.Error= ex.Message;
         }
 
         return null;
     }
 
-    private void LogError(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null)
-    {
-        string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
+    //private void LogError(HttpStatusCode statusCode = HttpStatusCode.InternalServerError, string? errorResponse = null, Exception? ex = null)
+    //{
+    //    string? errorMessage = ex != null ? $"HTTP Request Error: {ex.Message}" : errorResponse;
 
-        Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: " + errorMessage);
-    }
+    //    Log.Logger.ForContext("Process", "SendRequest").Error($"HTTP Request Error. Status Code: " + errorMessage);
+    //}
 
     private TokenResultDTO ExtractBearerToken(HttpResponseMessage response)
     {
